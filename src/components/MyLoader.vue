@@ -1,11 +1,11 @@
 <script setup>
-defineProps({
-  show: Boolean
-});
+import { useLoader } from '@/stores/loader.js';
+
+const loaderStore = useLoader();
 </script>
 
 <template>
-  <div v-if="show" class="loader-wrap">
+  <div v-if="loaderStore.isShowLoader" class="loader-wrap">
     <div class='demo'>
       <div class='circle'>
         <div class='inner'></div>

@@ -1,12 +1,39 @@
 <script setup>
+import MyLink from '@/components/ui/MyLink.vue';
+
+const links = [
+  {
+    to: '/index',
+    text: 'Home'
+  },
+  {
+    to: '/products',
+    text: 'Products'
+  },
+  {
+    to: '/about',
+    text: 'About'
+  },
+  {
+    to: '/contacts',
+    text: 'Contacts'
+  }
+];
 </script>
 
 <template>
   <nav>
-    <router-link to="/">Home</router-link>
-    <router-link to="/posts">Products</router-link>
-    <router-link to="/about">About</router-link>
-    <router-link to="/contacts">Contacts</router-link>
+    <router-link v-for="link in links" :key="link" :to="link.to"
+                 v-slot="{ navigate, isActive, isExactActive }"
+    >
+      <MyLink :tag="'button'"
+              :active="isActive"
+              :class="[isActive && 'router-link-active', isExactActive && 'router-link-exact-active']"
+              @click="navigate"
+      >
+        {{ link.text }}
+      </MyLink>
+    </router-link>
   </nav>
 </template>
 
@@ -17,28 +44,6 @@ nav {
   align-items: center;
   padding: 10px;
   gap: 13px;
-}
-
-a {
-  color: var(--color-link);
-  position: relative;
-  transition: color ease var(--transition-time-hover-link);
-}
-
-a:before {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  width: 0;
-  height: 1px;
-  background: var(--color-link);
-  transform: translateX(-50%);
-  transition: width ease var(--transition-time-hover-link);
-}
-
-a:hover:before {
-  width: 100%;
 }
 
 .router-link-active {

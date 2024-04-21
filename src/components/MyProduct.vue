@@ -1,98 +1,75 @@
 <script setup>
-import { defineProps, defineEmits, inject, ref, watch } from 'vue';
+import { defineProps, defineEmits, inject } from 'vue';
 import { urlProducts, request } from '@/request/request.js';
+import MyLink from '@/components/ui/MyLink.vue';
+import { useLoader } from '@/stores/loader';
 
-const {
-  updateShowLoader
-} = inject('showLoader');
+const storeLoader = useLoader();
 
 defineProps({
   product: Object
 });
 
-const isDeleteProduct = ref(true);
 const emit = defineEmits('delete');
 
 const requestDelete = async (id) => {
-  updateShowLoader(true);
+  storeLoader.toggleShowLoader();
   try {
     const res = await request({
       url: `${urlProducts}${id}`,
       method: 'DELETE'
     });
 
-    // isDeleteProduct.value = false;
     emit('delete', res.id);
   } catch (e) {
     console.log(e);
   } finally {
-    updateShowLoader(false);
+    storeLoader.toggleShowLoader();
   }
 };
 </script>
 
 <template>
-  <Transition>
-    <li v-if="isDeleteProduct">
-      <h2 class="title">{{ product.title }}</h2>
+  <li>
+    <h2 class="title">{{ product.title }}</h2>
 
-      <div :class="{'wrap-img': true}">
-        <div>
-          <img width="400" height="auto" :src="product.image" :alt="product.title">
-        </div>
+    <div :class="{'wrap-img': true}">
+      <div>
+        <img width="400" height="auto" :src="product.image" :alt="product.title">
       </div>
+    </div>
 
-      <div class="wrap-info">
-        <p class="text"><span>Description:</span> {{ product.description }}</p>
-        <p><span>Price:</span> {{ product.price }} $</p>
-        <p><span>Category:</span> {{ product.category }}</p>
-        <p><span>Id:</span> {{ product.id }}</p>
-      </div>
+    <div class="wrap-info">
+      <p class="text"><span>Description:</span> {{ product.description }}</p>
+      <p><span>Price:</span> {{ product.price }} $</p>
+      <p><span>Category:</span> {{ product.category }}</p>
+      <p><span>Id:</span> {{ product.id }}</p>
+    </div>
 
-      <div class="wrap-settings">
-        <button @click="requestDelete(product.id)" type="button">Удалить товар</button>
-      </div>
-    </li>
-  </Transition>
+    <div class="wrap-settings">
+      <MyLink :tag="button" @click="requestDelete(product.id)">Удалить товар</MyLink>
+    </div>
+  </li>
 </template>
 
 <style scoped>
-.v-enter-from,
-.v-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
-  transition: all 0.5s ease;
-}
-
 li {
   display: flex;
   flex-wrap: wrap;
   padding: 30px 20px 20px;
   gap: 20px;
-  background-color: rgba(50, 61, 12, 0.5);
+  background-color: var(--color-bac-product);
   backdrop-filter: blur(5px);
-  border-radius: 20px;
-  position: relative;
-  animation: ease spin 0.5s;
-  transform: translateX(0px);
+  border-radius: var(--border-radius);
 }
 
-@keyframes spin {
-  0% {
-    transform: translateX(100%);
-  }
-
-  100% {
-    transform: translateX(0px);
-  }
-}
 
 .title {
   width: 100%;
 }
 
 .wrap-img {
-  max-width: 20%;
+  max-width: fit-content;
   width: 100%;
 }
 
@@ -123,9 +100,9 @@ img {
   font-weight: bold;
 }
 
-button {
-  color: var(--color-link);
-  background: transparent;
-  cursor: pointer;
+.wrap-settings {
+  width: 100%;
+  display: flex;
+  justify-content: start;
 }
 </style>
