@@ -1,5 +1,15 @@
+<script setup>
+import { useAuthStore } from '@/stores/authUser';
+
+const authStore = useAuthStore();
+
+
+</script>
+
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
-  </div>
+  <button @click="authStore.updateToken">обновить токен</button>
 </template>
+
+<style scoped>
+
+</style>

@@ -88,7 +88,7 @@ input {
 
 label {
   color: var(--color-info-title);
-  max-width: 186px;
+  max-width: 200px;
   width: 100%;
 }
 

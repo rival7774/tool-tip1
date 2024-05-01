@@ -1,33 +1,42 @@
 import { defineStore } from 'pinia';
 
 export const useValidation = defineStore('validation', () => {
-  const validate = (input) => {
-    const type = input.type;
-    const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    let notValidated = null;
+  const validate = (form) => {
+    const notValidated = [];
+    const elementsForm = form.elements;
+    let inputsToCheck;
 
-    switch (type) {
-      case 'email':
-        if (!pattern.test(input.value.trim())) {
-          notValidated = {
-            elem: input,
-            message: 'Введите коректный email пример "****@****.**"'
-          };
-        }
-        break;
+    inputsToCheck = [...elementsForm].filter((input) => {
+      return input.tagName.toLowerCase() === 'input' || input.tagName.toLowerCase() === 'textarea' && input.required;
+    });
 
-      case 'password':
-        if (input.value.length < 6) {
-          notValidated = {
-            elem: input,
-            message: 'Пароль должен быть не меньше 6 символов'
-          };
-        }
-        break;
+    inputsToCheck.forEach((input) => {
+      const type = input.type;
+      const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-      default:
-        break;
-    }
+      switch (type) {
+        case 'email':
+          if (!pattern.test(input.value.trim())) {
+            notValidated.push({
+              elem: input,
+              message: 'Введите коректный email пример "****@****.**"'
+            });
+          }
+          break;
+
+        case 'password':
+          if (input.value.length < 6) {
+            notValidated.push({
+              elem: input,
+              message: 'Пароль должен быть не меньше 6 символов'
+            });
+          }
+          break;
+
+        default:
+          break;
+      }
+    });
 
     return notValidated;
   };

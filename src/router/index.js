@@ -1,41 +1,70 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/authUser';
 
 const routes = [{
   path: '/home',
   name: 'home',
-  component: () => import('../views/userView/UserView.vue'),
+  component: () => import('../views/userView/HomeView.vue'),
   meta: {
     requiresAuth: true
   },
   children: [{
-    path: '/index',
-    name: 'index',
-    component: () => import('../views/userView/views/HomeView.vue')
+    path: '/home/main',
+    name: 'main',
+    component: () => import('../views/userView/views/MainView.vue'),
+    meta: {
+      requiresAuth: true
+    }
   },
     {
-      path: '/about',
+      path: '/home/about',
       name: 'about',
-      component: () => import('../views/userView/views/AboutView.vue')
-    }, {
-      path: '/contacts',
+      component: () => import('../views/userView/views/AboutView.vue'),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/home/contacts',
       name: 'contacts',
-      component: () => import('../views/userView/views/ContactsView.vue')
-    }, {
-      path: '/products',
-      name: 'Products',
-      component: () => import('../views/userView/views/ProductsView.vue')
+      component: () => import('../views/userView/views/ContactsView.vue'),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/home/products',
+      name: 'products',
+      component: () => import('../views/userView/views/ProductsView.vue'),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/home/settings',
+      name: 'settings',
+      component: () => import('../views/userView/views/SettingsView.vue'),
+      meta: {
+        requiresAuth: true
+      }
     }
   ]
 },
   {
-    path: '/login',
-    name: 'login',
-    component: () => import('../views/ViewLogin.vue')
+    path: '/signup',
+    name: 'signup',
+    component: () => import('../views/ViewSignUp.vue'),
+    meta: {
+      requiresAuth: false
+    }
   },
   {
     path: '/',
-    name: '/start',
-    component: () => import('../App.vue')
+    name: 'signin',
+    component: () => import('../views/ViewSignIn.vue'),
+    meta: {
+      requiresAuth: false
+    }
   }
 ];
 
@@ -44,13 +73,15 @@ const router = createRouter({
   routes
 });
 
-const isAuthenticated = true;
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
 
-router.beforeEach((to, from) => {
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    return {
-      name: 'login'
-    };
+  if (to.meta.requiresAuth && !authStore.userInfo.token) {
+    next('/');
+  } else if (!to.meta.requiresAuth && authStore.userInfo.token) {
+    next('/home/main');
+  } else {
+    next();
   }
 });
 
