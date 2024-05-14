@@ -1,108 +1,193 @@
 <script setup>
-import { defineProps, defineEmits, inject } from 'vue';
-import { urlProducts, request } from '@/request/request.js';
+import MySubstrate from '@/components/MySubstrate.vue';
 import MyLink from '@/components/ui/MyLink.vue';
+import { formatDate } from '@/helpers/formatDate';
+import { ref } from 'vue';
+import { deleteProduct } from '@/api/deleteProduct';
+import { useProductsStore } from '@/stores/allProducts';
 import { useLoader } from '@/stores/loader';
+import { useRouter } from 'vue-router';
+import { deleteImageToStorageRequest } from '@/api/deleteImageToStorageRequest';
+import { getRelationUserProductsRequest } from '@/api/getRelationUserProductsRequest';
+import { axiosApiInstanceAuth } from '@/api/interceptors';
+import { useAuthStore } from '@/stores/authUser';
 
-const storeLoader = useLoader();
-
-defineProps({
-  product: Object
+const { product } = defineProps({
+  product: {
+    type: Object,
+    required: true
+  }
 });
 
-const emit = defineEmits('delete');
+const router = useRouter();
+const loaderStore = useLoader();
+const productsStore = useProductsStore();
+const authStore = useAuthStore();
 
-const requestDelete = async (id) => {
-  storeLoader.toggleShowLoader();
+const showControls = ref(false);
+const date = formatDate(product.timeOfCreation);
+const descriptions = product.description.split('\n');
+
+const isShowControls = async () => {
+  const userId = authStore.userInfo.localId;
+  const relationUserProducts = await getRelationUserProductsRequest(userId);
+  const userProductsIds = relationUserProducts.data.idsProducts;
+
+  showControls.value = userProductsIds.indexOf(product.idProduct) !== -1;
+};
+isShowControls();
+
+const deleteRelationUserProductsRequest = async (idUser, idProduct) => {
+  const resUserProducts = await getRelationUserProductsRequest(idUser);
+  const arrProductsIds = resUserProducts.data.idsProducts.filter((id) => id !== idProduct);
+  const urlPut = `https://vue-crm-8cbad-default-rtdb.europe-west1.firebasedatabase.app/user-products/${idUser}.json`;
+
+  return await axiosApiInstanceAuth.put(urlPut, { idsProducts: arrProductsIds });
+};
+
+const onClickBtnDelete = async () => {
   try {
-    const res = await request({
-      url: `${urlProducts}${id}`,
-      method: 'DELETE'
-    });
+    loaderStore.toggleShowLoader();
 
-    emit('delete', res.id);
+    await deleteProduct(product.idProduct);
+    await deleteRelationUserProductsRequest(authStore.userInfo.localId, product.idProduct);
+    await productsStore.getProducts();
+    if (product.img.name) {
+      await deleteImageToStorageRequest(product.img.name);
+    }
   } catch (e) {
     console.log(e);
   } finally {
-    storeLoader.toggleShowLoader();
+    loaderStore.toggleShowLoader();
   }
+};
+
+const onClickBtnEdit = async () => {
+  router.push({
+    name: 'product',
+    params: { id: product.idProduct }
+  });
 };
 </script>
 
 <template>
-  <li>
-    <h2 class="title">{{ product.title }}</h2>
+  <div>
+    <MySubstrate>
+      <div class="wrap-product">
+        <div class="author">
+          <p class="author__title title">Данные автора продукта</p>
+          <div class="author__info">
+            <p><span class="title">Имя:</span> {{ product.userName }}</p>
+            <p><span class="title">Почта:</span> {{ product.userEmail }}</p>
+          </div>
+        </div>
 
-    <div :class="{'wrap-img': true}">
-      <div>
-        <img width="400" height="auto" :src="product.image" :alt="product.title">
+        <div class="wrap-info">
+          <img v-if="product?.img && product?.img.url" :src="product.img.url" width="110" height="110"
+               alt="Картинка товара">
+          <p class="substitutionForPicture" v-else>Фото отсутствует</p>
+
+          <div class="info">
+            <p class="info__name"><span class="title">Название продукта:</span> {{ product.name }}</p>
+            <p class="info__description">
+              <span class="title">Описание:<br></span>
+              <span
+                  v-for="description of descriptions" :key="description">{{ description }}<br></span>
+            </p>
+            <p class="info__price"><span class="title">Цена:</span> {{ product.price }} {{ product.currency }}</p>
+            <p class="info__code">{{ product.code }}</p>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="wrap-date">
+            <p class="title">Дата создания</p>
+            <span>{{ date.date }}.{{ date.month }}.{{ date.year }}</span>
+            <span>{{ date.hour }}:{{ date.minute }}:{{ date.second }}</span>
+          </div>
+
+          <div v-if="showControls" class="controls">
+            <MyLink @click="onClickBtnDelete" tag="button">Удалить</MyLink>
+            <MyLink @click="onClickBtnEdit" tag="button">Редактировать</MyLink>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div class="wrap-info">
-      <p class="text"><span>Description:</span> {{ product.description }}</p>
-      <p><span>Price:</span> {{ product.price }} $</p>
-      <p><span>Category:</span> {{ product.category }}</p>
-      <p><span>Id:</span> {{ product.id }}</p>
-    </div>
-
-    <div class="wrap-settings">
-      <MyLink :tag="button" @click="requestDelete(product.id)">Удалить товар</MyLink>
-    </div>
-  </li>
+    </MySubstrate>
+  </div>
 </template>
 
 <style scoped>
-li {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 30px 20px 20px;
-  gap: 20px;
-  background-color: var(--color-bac-product);
-  backdrop-filter: blur(5px);
-  border-radius: var(--border-radius);
-}
-
-
 .title {
+  color: var(--color-info-title);
+}
+
+.wrap-product {
+  text-align: start;
+}
+
+.author {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.author__title {
   width: 100%;
 }
 
-.wrap-img {
-  max-width: fit-content;
-  width: 100%;
-}
-
-.wrap-img div {
-  width: fit-content;
-  overflow: hidden;
-  max-width: 130px;
-  max-height: 130px;
-}
-
-img {
-  max-width: 130px;
-  max-height: 130px;
+.author__info {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .wrap-info {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: 77%;
-  width: 100%;
-  text-align: start;
 }
 
-.wrap-info span {
-  color: var(--color-info-title);
-  font-style: italic;
-  font-weight: bold;
+img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  border: 2px solid var(--color-info-title);
+  border-radius: var(--border-radius);
 }
 
-.wrap-settings {
-  width: 100%;
+.info {
+  margin-left: 20px;
   display: flex;
-  justify-content: start;
+  gap: 10px;
+  flex-direction: column;
+  align-items: start;
+}
+
+.substitutionForPicture {
+  width: 110px;
+  height: 110px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid var(--color-info-title);
+  border-radius: var(--border-radius);
+  text-align: center;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.wrap-date {
+  display: flex;
+  flex-direction: column;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  justify-content: end;
+  align-items: end;
 }
 </style>

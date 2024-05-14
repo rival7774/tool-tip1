@@ -12,7 +12,7 @@ import MyPopup from '@/components/MyPopup.vue';
 import MyLoader from '@/components/MyLoader.vue';
 
 const router = useRouter();
-const PAGE_HOME = '/home';
+const PAGE_HOME = '/home/main';
 const PAGE_SIGNUP = { name: 'signup' };
 const REQUEST = 'signin';
 
@@ -44,7 +44,6 @@ const auth = async (event) => {
       }, REQUEST);
 
       form.reset();
-
 
       router.push(PAGE_HOME);
     } catch (e) {

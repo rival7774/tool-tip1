@@ -1,11 +1,14 @@
 <script setup>
 import MyLink from '@/components/ui/MyLink.vue';
+import MyNavLink from '@/components/ui/MyNavLink.vue';
 import MyPopup from '@/components/MyPopup.vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authUser';
+import { useAboutStore } from '@/stores/about';
 
 const authStore = useAuthStore();
+const aboutStore = useAboutStore();
 const router = useRouter();
 const isShowPopup = ref(false);
 const showPopup = () => {
@@ -13,12 +16,19 @@ const showPopup = () => {
 };
 
 const onClickBtnExit = () => {
+  aboutStore.clearDataUser();
   authStore.clearUser();
   router.push({ name: 'signin' });
 };
 
 const onClickBtnCansel = () => {
   isShowPopup.value = false;
+};
+
+const onClickWrapPopup = (e) => {
+  if (e.currentTarget === e.target) {
+    onClickBtnCansel();
+  }
 };
 
 const links = [
@@ -28,23 +38,11 @@ const links = [
   },
   {
     to: '/home/products',
-    text: 'Продукты'
+    text: 'Товары'
   },
   {
     to: '/home/about',
     text: 'Мои данные'
-  },
-  {
-    to: '/home/contacts',
-    text: 'Контакты'
-  },
-  {
-    to: '/home/settings',
-    text: 'Настройки'
-  },
-  {
-    to: '',
-    text: 'Выйти'
   }
 ];
 </script>
@@ -53,25 +51,15 @@ const links = [
   <nav>
     <ul>
       <li v-for="link in links" :key="link">
-        <router-link v-if="link.to"
-                     :to="link.to"
-                     v-slot="{ navigate, isActive, isExactActive }"
-        >
-          <MyLink :tag="'button'"
-                  :active="isActive"
-                  :class="[isActive && 'router-link-active', isExactActive && 'router-link-exact-active']"
-                  @click="navigate"
-          >
-            {{ link.text }}
-          </MyLink>
-        </router-link>
-
-        <MyLink v-else @click="showPopup">{{ link.text }}</MyLink>
+        <MyNavLink :data-link="link"/>
+      </li>
+      <li>
+        <MyLink @click="showPopup">Выйти</MyLink>
       </li>
     </ul>
 
     <transition>
-      <MyPopup v-if="isShowPopup" class="my-popup">
+      <MyPopup @click="onClickWrapPopup" v-if="isShowPopup" class="wrap-popup">
         <p>Вы уверенны, что хотите выйти из своего профиля?</p>
         <div class="wrap-button">
           <MyLink tag="button" @click="onClickBtnExit">Выйти</MyLink>
@@ -91,27 +79,14 @@ ul {
   gap: 13px;
 }
 
-.router-link-active {
-  color: var(--color-hover-link);
-}
-
-.router-link-active:before {
+.wrap-popup {
   width: 100%;
-}
-
-.v-enter-active,
-.v-leave-active {
-  transition: all 0.5s ease;
-}
-
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
-  width: 0;
-}
-
-.my-popup {
-  max-width: 378px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-left: calc(50% - 150px);
+  padding-right: calc(50% - 150px);
 }
 
 .wrap-button {

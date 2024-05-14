@@ -11,7 +11,7 @@ const checkUser = () => {
       authStore.updateUser({
         refreshToken: user.refreshToken,
         token: user.token,
-        expiresIn: user.expires_in
+        localId: user.localId
       });
     }
   }

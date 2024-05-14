@@ -11,8 +11,10 @@ export const useValidation = defineStore('validation', () => {
     });
 
     inputsToCheck.forEach((input) => {
+      const name = input.name;
       const type = input.type;
       const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      const currencyRegex = /^(\$|€|£|руб|\u20BD)$/;
 
       switch (type) {
         case 'email':
@@ -29,6 +31,29 @@ export const useValidation = defineStore('validation', () => {
             notValidated.push({
               elem: input,
               message: 'Пароль должен быть не меньше 6 символов'
+            });
+          }
+          break;
+
+        case 'text':
+          if (!input.value.length) {
+            notValidated.push({
+              elem: input,
+              message: `Внесите данные в поле ${input.dataset.labelValue}`
+            });
+          }
+          break;
+
+        default:
+          break;
+      }
+
+      switch (name) {
+        case 'currency':
+          if (!currencyRegex.test(input.value.trim())) {
+            notValidated.push({
+              elem: input,
+              message: 'В поле валюта допустимы символы ($, €, £, ₽, руб)'
             });
           }
           break;

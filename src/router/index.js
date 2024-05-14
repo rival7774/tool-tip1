@@ -8,16 +8,17 @@ const routes = [{
   meta: {
     requiresAuth: true
   },
-  children: [{
-    path: '/home/main',
-    name: 'main',
-    component: () => import('../views/userView/views/MainView.vue'),
-    meta: {
-      requiresAuth: true
-    }
-  },
+  children: [
     {
-      path: '/home/about',
+      path: 'main',
+      name: 'main',
+      component: () => import('../views/userView/views/MainView.vue'),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: 'about',
       name: 'about',
       component: () => import('../views/userView/views/AboutView.vue'),
       meta: {
@@ -25,7 +26,7 @@ const routes = [{
       }
     },
     {
-      path: '/home/contacts',
+      path: 'contacts',
       name: 'contacts',
       component: () => import('../views/userView/views/ContactsView.vue'),
       meta: {
@@ -38,10 +39,36 @@ const routes = [{
       component: () => import('../views/userView/views/ProductsView.vue'),
       meta: {
         requiresAuth: true
-      }
+      },
+      children: [
+        {
+          path: 'all-products',
+          name: 'all-products',
+          component: () => import('../views/userView/views/AllProductsView.vue'),
+          meta: {
+            requiresAuth: true
+          }
+        },
+        {
+          path: 'add-products',
+          name: 'add-products',
+          component: () => import('../views/userView/views/AddProductView.vue'),
+          meta: {
+            requiresAuth: true
+          }
+        },
+        {
+          path: 'product/:id',
+          name: 'product',
+          component: () => import('../views/userView/views/ProductView.vue'),
+          meta: {
+            requiresAuth: true
+          }
+        }
+      ]
     },
     {
-      path: '/home/settings',
+      path: 'settings',
       name: 'settings',
       component: () => import('../views/userView/views/SettingsView.vue'),
       meta: {

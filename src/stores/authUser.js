@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
-import { axiosApiInstanceAuth } from '@/api.js';
+import { axiosApiInstanceAuth } from '@/api/interceptors.js';
 import { ref } from 'vue';
+import axios from 'axios';
 
 const apiKey = process.env.VUE_APP_KEY_FIREBASE;
 
@@ -8,7 +9,7 @@ export const useAuthStore = defineStore('auth', () => {
   const userInfo = ref({
     token: '',
     refreshToken: '',
-    expiresIn: ''
+    localId: ''
   });
 
   const error = ref('');
@@ -26,12 +27,12 @@ export const useAuthStore = defineStore('auth', () => {
       updateUser({
         refreshToken: res.data.refreshToken,
         token: res.data.idToken,
-        expiresIn: res.data.expiresIn
+        localId: res.data.localId
       });
 
       if (type.toLowerCase() === 'signup') {
-        const urlSetUser =
-          `https://vue-crm-8cbad-default-rtdb.europe-west1.firebasedatabase.app/custom_users/${res.data.localId}.json?`;
+        const urlUser =
+          `https://vue-crm-8cbad-default-rtdb.europe-west1.firebasedatabase.app/users/${res.data.localId}.json`;
         const payloadUser = {};
 
         for (const payloadKey in payload) {
@@ -40,9 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
           }
         }
 
-        const resSetUser = await axiosApiInstanceAuth.put(urlSetUser, { ...payloadUser });
-
-        userInfo.value.name = resSetUser.data;
+        await axiosApiInstanceAuth.put(urlUser, payloadUser);
       }
     } catch (e) {
       let typeError;
@@ -85,57 +84,25 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  const updateToken = async () => {
-    const url = `https://securetoken.googleapis.com/v1/token?key=${apiKey}`;
-    const user = JSON.parse(localStorage.user);
-
-    try {
-      const res = await axiosApiInstanceAuth.post(url, `grant_type=refresh_token&refresh_token=a${user.refreshToken}`);
-
-      updateUser({
-        refreshToken: res.data.refresh_token,
-        token: res.data.access_token,
-        expiresIn: res.data.expires_in
-      });
-
-    } catch (e) {
-      if (e.response) {
-        switch (e.response.data.error.message) {
-          case 'INVALID_REFRESH_TOKEN':
-            error.value = e.response.data.error.message;
-            break;
-
-          default:
-            break;
-        }
-      }
-
-      throw new Error(e);
-    }
-  };
-
   const updateUser = ({
     refreshToken,
     token,
-    expiresIn
+    localId
   }) => {
     const user = localStorage.user ? JSON.parse(localStorage.user) : {};
 
-    user.refreshToken = refreshToken;
-    user.token = token;
-    user.expiresIn = expiresIn;
+    user.refreshToken = refreshToken || user.refreshToken;
+    user.token = token || user.token;
+    user.localId = localId || user.localId;
     localStorage.user = JSON.stringify(user);
 
-    userInfo.value.refreshToken = refreshToken;
-    userInfo.value.token = token;
-    userInfo.value.expiresIn = expiresIn;
+    userInfo.value.refreshToken = refreshToken || userInfo.value.refreshToken;
+    userInfo.value.token = token || userInfo.value.token;
+    userInfo.value.localId = localId || userInfo.value.localId;
   };
 
   const clearUser = () => {
-    for (const key in userInfo.value) {
-      userInfo.value[key] = '';
-    }
-
+    userInfo.value = {};
     localStorage.removeItem('user');
   };
 
@@ -143,7 +110,6 @@ export const useAuthStore = defineStore('auth', () => {
     auth,
     userInfo,
     error,
-    updateToken,
     updateUser,
     clearUser
   };

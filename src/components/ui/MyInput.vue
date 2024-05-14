@@ -1,9 +1,10 @@
 <script setup>
-import { defineProps, defineEmits, watch, ref } from 'vue';
+import { defineEmits, defineProps, ref, watch } from 'vue';
 
 const {
   modelValue,
-  showLabel
+  showLabel,
+  type
 } = defineProps({
   modelValue: String,
   placeholder: String,
@@ -11,6 +12,7 @@ const {
   labelValue: String,
   classInput: String,
   classLabel: String,
+  name: String,
   showLabel: {
     type: Boolean,
     default: true
@@ -24,7 +26,8 @@ const {
       'password',
       'email',
       'tel',
-      'search'
+      'search',
+      'number'
     ].includes(val)
   },
   required: {
@@ -34,31 +37,44 @@ const {
 });
 
 const emits = defineEmits(['update:modelValue']);
-
 const value = ref(modelValue);
 watch(value, () => {
   emits('update:modelValue', value.value);
 });
+
+const onInputPrice = (e) => {
+  if (type === 'number') {
+    value.value = e.target.value.replace(/\D/g, '');
+  }
+};
 </script>
 
 <template>
   <div>
-    <label :for="id" :class="[{'visually-hidden': !showLabel}, classLabel]">{{ labelValue }}</label>
-    <input v-if="type !== 'textarea'"
-           :type="type"
-           :placeholder="placeholder"
-           v-model="value"
-           :id="id"
-           :class="[{'input-full-width': !showLabel}, classInput]"
-           :required="required"
+    <label
+        :for="id"
+        :class="[{'visually-hidden': !showLabel}, classLabel]">{{ labelValue }}
+    </label>
+    <input
+        v-if="type !== 'textarea'"
+        :type="type === 'number' ? 'text' : type"
+        :placeholder="placeholder"
+        v-model="value"
+        :id="id"
+        :class="[{'input-full-width': !showLabel}, classInput]"
+        :required="required"
+        :name="name"
+        :data-label-value="labelValue"
+        @input="onInputPrice"
     >
 
-    <textarea rows="3"
-              v-else
-              v-model="value"
-              :id="id"
-              :class="getWidthInput"
-              :required="required"
+    <textarea
+        v-else
+        v-model="value"
+        :id="id"
+        :required="required"
+        :name="name"
+        :data-label-value="labelValue"
     >
     </textarea>
   </div>
@@ -73,6 +89,7 @@ div {
   justify-content: center;
 }
 
+textarea,
 input {
   color: black;
   border-radius: var(--border-radius);
@@ -80,6 +97,10 @@ input {
   min-width: 100px;
   max-width: 45%;
   width: 100%;
+}
+
+textarea {
+  min-width: 45%;
 }
 
 .input-full-width {

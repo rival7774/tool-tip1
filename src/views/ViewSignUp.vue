@@ -41,7 +41,6 @@ const auth = async (event) => {
       event.target.reset();
       router.push(PAGE_SIGNUP);
     } catch (e) {
-      console.log(e);
       errorRequest.value = e;
     } finally {
       loaderStore.toggleShowLoader();
