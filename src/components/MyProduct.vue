@@ -31,9 +31,12 @@ const descriptions = product.description.split('\n');
 const isShowControls = async () => {
   const userId = authStore.userInfo.localId;
   const relationUserProducts = await getRelationUserProductsRequest(userId);
-  const userProductsIds = relationUserProducts.data.idsProducts;
 
-  showControls.value = userProductsIds.indexOf(product.idProduct) !== -1;
+  if (relationUserProducts.data) {
+    const userProductsIds = relationUserProducts.data.idsProducts;
+
+    showControls.value = userProductsIds.indexOf(product.idProduct) !== -1;
+  }
 };
 isShowControls();
 

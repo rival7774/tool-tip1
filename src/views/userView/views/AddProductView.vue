@@ -14,7 +14,7 @@ import { useAuthStore } from '@/stores/authUser';
 import { uploadImageToStorage } from '@/api/uploadImageToStorage';
 import { getProductRequest } from '@/api/getProductRequest';
 import { productChangeRequest } from '@/api/productChangeRequest';
-import {getRelationUserProductsRequest} from '@/api/getRelationUserProductsRequest';
+import { getRelationUserProductsRequest } from '@/api/getRelationUserProductsRequest';
 
 const NAME_FILE = 'photo';
 

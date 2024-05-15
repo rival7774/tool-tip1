@@ -1,5 +1,5 @@
 <script setup>
-import { defineEmits, defineProps, ref, watch } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 
 const {
   modelValue,
@@ -35,6 +35,17 @@ const {
     default: false
   }
 });
+
+// const [value, modif] = defineModel({
+//   set (value) {
+//     if (modif.num) {
+//       console.log(value);
+//       return 1;
+//     }
+//     console.log(2);
+//     return value;
+//   }
+// });
 
 const emits = defineEmits(['update:modelValue']);
 const value = ref(modelValue);
