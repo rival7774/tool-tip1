@@ -26,14 +26,6 @@ const routes = [{
       }
     },
     {
-      path: 'contacts',
-      name: 'contacts',
-      component: () => import('../views/userView/views/ContactsView.vue'),
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
       path: '/home/products',
       name: 'products',
       component: () => import('../views/userView/views/ProductsView.vue'),
@@ -67,14 +59,6 @@ const routes = [{
         }
       ]
     },
-    {
-      path: 'settings',
-      name: 'settings',
-      component: () => import('../views/userView/views/SettingsView.vue'),
-      meta: {
-        requiresAuth: true
-      }
-    }
   ]
 },
   {

@@ -47,7 +47,7 @@ const auth = async (event) => {
 
       router.push(PAGE_HOME);
     } catch (e) {
-      errorRequest.value = e;
+      errorRequest.value = e.message;
     } finally {
       loaderStore.toggleShowLoader();
     }

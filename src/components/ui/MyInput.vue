@@ -1,11 +1,7 @@
 <script setup>
 import { defineProps, ref, watch } from 'vue';
 
-const {
-  modelValue,
-  showLabel,
-  type
-} = defineProps({
+const props = defineProps({
   modelValue: String,
   placeholder: String,
   id: String,
@@ -20,15 +16,7 @@ const {
   type: {
     type: String,
     default: 'text',
-    validator: (val) => [
-      'text',
-      'textarea',
-      'password',
-      'email',
-      'tel',
-      'search',
-      'number'
-    ].includes(val)
+    validator: (val) => ['text', 'textarea', 'password', 'email', 'tel', 'search', 'number'].includes(val)
   },
   required: {
     type: Boolean,
@@ -36,25 +24,19 @@ const {
   }
 });
 
-// const [value, modif] = defineModel({
-//   set (value) {
-//     if (modif.num) {
-//       console.log(value);
-//       return 1;
-//     }
-//     console.log(2);
-//     return value;
-//   }
-// });
-
 const emits = defineEmits(['update:modelValue']);
-const value = ref(modelValue);
-watch(value, () => {
-  emits('update:modelValue', value.value);
+const value = ref(props.modelValue);
+
+watch(value, (newValue) => {
+  emits('update:modelValue', newValue);
+});
+
+watch(() => props.modelValue, (newValue) => {
+  value.value = newValue;
 });
 
 const onInputPrice = (e) => {
-  if (type === 'number') {
+  if (props.type === 'number') {
     value.value = e.target.value.replace(/\D/g, '');
   }
 };
@@ -77,7 +59,7 @@ const onInputPrice = (e) => {
         :name="name"
         :data-label-value="labelValue"
         @input="onInputPrice"
-    >
+    />
 
     <textarea
         v-else

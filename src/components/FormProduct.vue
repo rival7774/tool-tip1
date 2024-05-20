@@ -1,66 +1,87 @@
 <script setup>
 import MyFieldset from '@/components/MyFieldset.vue';
 import MyInput from '@/components/ui/MyInput.vue';
-import { ref, watch } from 'vue';
+import MyInputFile from '@/components/ui/MyInputFile.vue';
+import MyError from '@/components/MyError.vue';
 
-const { modelValue } = defineProps({
-  modelValue: String
+const props = defineProps({
+  title: String,
+  errorRequest: String,
+  errorsValidation: Array,
+  srcPhoto: String
 });
 
-// const name = defineModel();
+const name = defineModel('name');
+const price = defineModel('price');
+const currency = defineModel('currency');
+const description = defineModel('description');
 
-const emits = defineEmits(['update:modelValue']);
-const name = ref(modelValue);
-watch(name, () => {
-  emits('update:modelValue', name.value);
-});
+const emits = defineEmits(['changeInputFile']);
+
+const onChangeInputFile = ({
+  file,
+  src
+}) => {
+  emits('changeInputFile', {
+    file,
+    src
+  });
+};
 </script>
 
 <template>
   <form novalidate>
-    <MyFieldset class="fieldset" legend-value="Создание продукта">
-<!--      <MyInput-->
-<!--          v-model="name"-->
-<!--          name="name"-->
-<!--          label-value="Название продукта"-->
-<!--          required-->
-<!--      />-->
-<!--      <MyInput-->
-<!--          v-model="product.price"-->
-<!--          name="price"-->
-<!--          type="number"-->
-<!--          label-value="Цена продукта"-->
-<!--          required-->
-<!--      />-->
-<!--      <MyInput-->
-<!--          v-model="product.currency"-->
-<!--          name="currency"-->
-<!--          label-value="Валюта"-->
-<!--          required-->
-<!--      />-->
-<!--      <MyInput-->
-<!--          v-model="product.description"-->
-<!--          name="description"-->
-<!--          type="textarea"-->
-<!--          label-value="Описание продукта"-->
-<!--      />-->
-<!--      <MyInputFile-->
-<!--          :name="NAME_FILE"-->
-<!--          id="file-product"-->
-<!--          accept="image/png, image/jpeg"-->
-<!--          label-value="Добавить фото"-->
-<!--          @change="onChangeInputFife"-->
-<!--      >-->
-<!--        <div class="wrap-img"><img :src="srcPhoto" alt=""></div>-->
-<!--      </MyInputFile>-->
+    <MyFieldset class="fieldset" :legend-value="title">
+      <MyInput
+          v-model="name"
+          name="name"
+          label-value="Название продукта"
+          required
+      />
+      <MyInput
+          v-model="price"
+          name="price"
+          type="number"
+          label-value="Цена продукта"
+          required
+      />
+      <MyInput
+          v-model="currency"
+          name="currency"
+          label-value="Валюта"
+          required
+      />
+      <MyInput
+          v-model="description"
+          name="description"
+          type="textarea"
+          label-value="Описание продукта"
+      />
+      <MyInputFile
+          name="photo"
+          id="file-product"
+          accept="image/png, image/jpeg"
+          label-value="Добавить фото"
+          @change="onChangeInputFile"
+      >
+        <div class="wrap-img"><img :src="srcPhoto" alt=""></div>
+      </MyInputFile>
     </MyFieldset>
 
-    <!--    <MyError :error-request="errorRequest" :errors-validation="errorsValidation"/>-->
+    <MyError :error-request="errorRequest" :errors-validation="errorsValidation"/>
 
     <slot></slot>
   </form>
 </template>
 
 <style scoped>
+.fieldset {
+  gap: 10px;
+}
 
+.wrap-img {
+  min-width: 100px;
+  max-width: 45%;
+  width: 100%;
+}
 </style>

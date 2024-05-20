@@ -6,17 +6,14 @@ import MyInputFile from '@/components/ui/MyInputFile.vue';
 import MyLink from '@/components/ui/MyLink.vue';
 import MyError from '@/components/MyError.vue';
 import { useLoader } from '@/stores/loader';
-import { getUserData } from '@/api/getUserData';
 import { reactive, ref } from 'vue';
 import { useValidation } from '@/stores/validation';
-import { axiosApiInstanceAuth } from '@/api/interceptors';
 import { useAuthStore } from '@/stores/authUser';
 import { uploadImageToStorage } from '@/api/uploadImageToStorage';
 import { getProductRequest } from '@/api/getProductRequest';
 import { productChangeRequest } from '@/api/productChangeRequest';
-import { getRelationUserProductsRequest } from '@/api/getRelationUserProductsRequest';
-
-const NAME_FILE = 'photo';
+import { addRelationUserProductsRequest } from '@/api/addRelationUserProductsRequest';
+import { addProductRequest } from '@/api/addProductRequest';
 
 const product = reactive({
   name: '',
@@ -28,7 +25,6 @@ const product = reactive({
     url: '',
     name: ''
   },
-  nameImg: ''
 });
 const srcPhoto = ref('');
 
@@ -51,19 +47,6 @@ const onResetForm = () => {
   srcPhoto.value = '';
 };
 
-const addProduct = async (form) => {
-  const url = `https://vue-crm-8cbad-default-rtdb.europe-west1.firebasedatabase.app/products.json`;
-  return await axiosApiInstanceAuth.post(url, form);
-};
-
-const addRelationUserProductsRequest = async (idUser, idProduct) => {
-  const resUserProducts = await getRelationUserProductsRequest(idUser);
-  const arrProductsIds = resUserProducts.data ? [...resUserProducts.data.idsProducts, idProduct] : [idProduct];
-
-  const urlPut = `https://vue-crm-8cbad-default-rtdb.europe-west1.firebasedatabase.app/user-products/${idUser}.json`;
-  return await axiosApiInstanceAuth.put(urlPut, { idsProducts: arrProductsIds });
-};
-
 const onSubmit = async (e) => {
   const form = e.target;
   errorsValidation.value = validation.validate(form);
@@ -73,24 +56,20 @@ const onSubmit = async (e) => {
   try {
     loaderStore.toggleShowLoader();
 
-    const resUser = await getUserData();
-    product.userEmail = resUser.data.email;
-    product.userName = resUser.data.name;
     product.timeOfCreation = new Date();
 
-    const resIdProduct = await addProduct(product);
+    const resIdProduct = await addProductRequest(product);
     const idProduct = resIdProduct.data.name;
     const productData = await getProductRequest(idProduct);
 
-    const nameImg = `${idProduct}${product.file.name}`;
-
+    productData.idProduct = idProduct;
     if (product.file) {
+      const nameImg = `${idProduct}${product.file.name}`;
       const urlImg = await uploadImageToStorage(nameImg, product.file);
 
       productData.img.name = nameImg;
       productData.img.url = urlImg;
     }
-    productData.idProduct = idProduct;
 
     await productChangeRequest(idProduct, productData);
     await addRelationUserProductsRequest(authStore.userInfo.localId, idProduct);
@@ -115,7 +94,7 @@ const onSubmit = async (e) => {
             required
         />
         <MyInput
-            v-model="product.price"
+            v-model.num="product.price"
             name="price"
             type="number"
             label-value="Цена продукта"
@@ -134,7 +113,7 @@ const onSubmit = async (e) => {
             label-value="Описание продукта"
         />
         <MyInputFile
-            :name="NAME_FILE"
+            name="photo"
             id="file-product"
             accept="image/png, image/jpeg"
             label-value="Добавить фото"

@@ -9,8 +9,8 @@ import { useLoader } from '@/stores/loader';
 import { useRouter } from 'vue-router';
 import { deleteImageToStorageRequest } from '@/api/deleteImageToStorageRequest';
 import { getRelationUserProductsRequest } from '@/api/getRelationUserProductsRequest';
-import { axiosApiInstanceAuth } from '@/api/interceptors';
 import { useAuthStore } from '@/stores/authUser';
+import { deleteRelationUserProductsRequest } from '@/api/deleteRelationUserProductsRequest';
 
 const { product } = defineProps({
   product: {
@@ -40,20 +40,13 @@ const isShowControls = async () => {
 };
 isShowControls();
 
-const deleteRelationUserProductsRequest = async (idUser, idProduct) => {
-  const resUserProducts = await getRelationUserProductsRequest(idUser);
-  const arrProductsIds = resUserProducts.data.idsProducts.filter((id) => id !== idProduct);
-  const urlPut = `https://vue-crm-8cbad-default-rtdb.europe-west1.firebasedatabase.app/user-products/${idUser}.json`;
-
-  return await axiosApiInstanceAuth.put(urlPut, { idsProducts: arrProductsIds });
-};
-
 const onClickBtnDelete = async () => {
   try {
     loaderStore.toggleShowLoader();
 
     await deleteProduct(product.idProduct);
     await deleteRelationUserProductsRequest(authStore.userInfo.localId, product.idProduct);
+
     await productsStore.getProducts();
     if (product.img.name) {
       await deleteImageToStorageRequest(product.img.name);

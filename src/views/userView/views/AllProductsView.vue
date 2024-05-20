@@ -2,7 +2,7 @@
 import MyProduct from '@/components/MyProduct.vue';
 import MySubstrate from '@/components/MySubstrate.vue';
 import { useProductsStore } from '@/stores/allProducts';
-import { onBeforeMount, onMounted } from 'vue';
+import { onBeforeMount } from 'vue';
 import { useLoader } from '@/stores/loader';
 
 const productsStore = useProductsStore();
