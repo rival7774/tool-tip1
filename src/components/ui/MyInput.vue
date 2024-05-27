@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, ref, watch } from 'vue';
+import { defineProps } from 'vue';
 
 const props = defineProps({
   modelValue: String,
@@ -16,7 +16,15 @@ const props = defineProps({
   type: {
     type: String,
     default: 'text',
-    validator: (val) => ['text', 'textarea', 'password', 'email', 'tel', 'search', 'number'].includes(val)
+    validator: (val) => [
+      'text',
+      'textarea',
+      'password',
+      'email',
+      'tel',
+      'search',
+      'number'
+    ].includes(val)
   },
   required: {
     type: Boolean,
@@ -25,20 +33,13 @@ const props = defineProps({
 });
 
 const emits = defineEmits(['update:modelValue']);
-const value = ref(props.modelValue);
 
-watch(value, (newValue) => {
-  emits('update:modelValue', newValue);
-});
-
-watch(() => props.modelValue, (newValue) => {
-  value.value = newValue;
-});
-
-const onInputPrice = (e) => {
+const onInput = (e) => {
   if (props.type === 'number') {
-    value.value = e.target.value.replace(/\D/g, '');
+    e.target.value = e.target.value.replace(/\D/g, '');
   }
+
+  emits('update:modelValue', e.target.value);
 };
 </script>
 
@@ -52,22 +53,23 @@ const onInputPrice = (e) => {
         v-if="type !== 'textarea'"
         :type="type === 'number' ? 'text' : type"
         :placeholder="placeholder"
-        v-model="value"
         :id="id"
         :class="[{'input-full-width': !showLabel}, classInput]"
         :required="required"
         :name="name"
         :data-label-value="labelValue"
-        @input="onInputPrice"
-    />
+        :value="props.modelValue"
+        @input="onInput"
+    >
 
     <textarea
         v-else
-        v-model="value"
         :id="id"
         :required="required"
         :name="name"
         :data-label-value="labelValue"
+        :value="props.modelValue"
+        @input="onInput"
     >
     </textarea>
   </div>

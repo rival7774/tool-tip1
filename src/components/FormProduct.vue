@@ -4,9 +4,9 @@ import MyInput from '@/components/ui/MyInput.vue';
 import MyInputFile from '@/components/ui/MyInputFile.vue';
 import MyError from '@/components/MyError.vue';
 
-const props = defineProps({
+const emits = defineEmits(['changeInputFile', 'update:name']);
+defineProps({
   title: String,
-  errorRequest: String,
   errorsValidation: Array,
   srcPhoto: String
 });
@@ -16,9 +16,7 @@ const price = defineModel('price');
 const currency = defineModel('currency');
 const description = defineModel('description');
 
-const emits = defineEmits(['changeInputFile']);
-
-const onChangeInputFile = ({
+const onChangeInputFife = ({
   file,
   src
 }) => {
@@ -62,13 +60,13 @@ const onChangeInputFile = ({
           id="file-product"
           accept="image/png, image/jpeg"
           label-value="Добавить фото"
-          @change="onChangeInputFile"
+          @change="onChangeInputFife"
       >
         <div class="wrap-img"><img :src="srcPhoto" alt=""></div>
       </MyInputFile>
     </MyFieldset>
 
-    <MyError :error-request="errorRequest" :errors-validation="errorsValidation"/>
+    <MyError :errors-validation="errorsValidation"/>
 
     <slot></slot>
   </form>

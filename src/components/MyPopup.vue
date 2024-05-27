@@ -29,5 +29,6 @@ defineProps({
   box-shadow: 1px 1px 28px 10px rgba(0, 0, 0, 0.69);
   -webkit-box-shadow: 1px 1px 28px 10px rgba(0, 0, 0, 0.69);
   -moz-box-shadow: 1px 1px 28px 10px rgba(0, 0, 0, 0.69);
+  position: relative;
 }
 </style>

@@ -57,7 +57,7 @@ onBeforeMount(() => {
 }
 
 .fade1-leave-active {
-  position: absolute;
+  position: fixed;
 }
 
 ul {

@@ -1,18 +1,18 @@
 <script setup>
 import MySubstrate from '@/components/MySubstrate.vue';
 import MyLink from '@/components/ui/MyLink.vue';
-import { formatDate } from '@/helpers/formatDate';
+import MyDate from '@/components/MyDate.vue';
 import { ref } from 'vue';
 import { deleteProduct } from '@/api/deleteProduct';
 import { useProductsStore } from '@/stores/allProducts';
 import { useLoader } from '@/stores/loader';
+import { useAuthStore } from '@/stores/authUser';
 import { useRouter } from 'vue-router';
 import { deleteImageToStorageRequest } from '@/api/deleteImageToStorageRequest';
 import { getRelationUserProductsRequest } from '@/api/getRelationUserProductsRequest';
-import { useAuthStore } from '@/stores/authUser';
 import { deleteRelationUserProductsRequest } from '@/api/deleteRelationUserProductsRequest';
 
-const { product } = defineProps({
+const props = defineProps({
   product: {
     type: Object,
     required: true
@@ -25,17 +25,17 @@ const productsStore = useProductsStore();
 const authStore = useAuthStore();
 
 const showControls = ref(false);
-const date = formatDate(product.timeOfCreation);
-const descriptions = product.description.split('\n');
+const descriptions = props.product.description.trim()
+                          .split('\n');
 
 const isShowControls = async () => {
   const userId = authStore.userInfo.localId;
   const relationUserProducts = await getRelationUserProductsRequest(userId);
 
-  if (relationUserProducts.data) {
-    const userProductsIds = relationUserProducts.data.idsProducts;
+  if (relationUserProducts) {
+    const userProductsIds = relationUserProducts.idsProducts;
 
-    showControls.value = userProductsIds.indexOf(product.idProduct) !== -1;
+    showControls.value = userProductsIds.indexOf(props.product.idProduct) !== -1;
   }
 };
 isShowControls();
@@ -44,12 +44,12 @@ const onClickBtnDelete = async () => {
   try {
     loaderStore.toggleShowLoader();
 
-    await deleteProduct(product.idProduct);
-    await deleteRelationUserProductsRequest(authStore.userInfo.localId, product.idProduct);
+    await deleteProduct(props.product.idProduct);
+    await deleteRelationUserProductsRequest(authStore.userInfo.localId, props.product.idProduct);
 
-    await productsStore.getProducts();
-    if (product.img.name) {
-      await deleteImageToStorageRequest(product.img.name);
+    await productsStore.deleteProduct(props.product.idProduct);
+    if (props.product.img.name) {
+      await deleteImageToStorageRequest(props.product.img.name);
     }
   } catch (e) {
     console.log(e);
@@ -61,7 +61,7 @@ const onClickBtnDelete = async () => {
 const onClickBtnEdit = async () => {
   router.push({
     name: 'product',
-    params: { id: product.idProduct }
+    params: { id: props.product.idProduct }
   });
 };
 </script>
@@ -85,21 +85,19 @@ const onClickBtnEdit = async () => {
 
           <div class="info">
             <p class="info__name"><span class="title">Название продукта:</span> {{ product.name }}</p>
-            <p class="info__description">
-              <span class="title">Описание:<br></span>
-              <span
-                  v-for="description of descriptions" :key="description">{{ description }}<br></span>
-            </p>
             <p class="info__price"><span class="title">Цена:</span> {{ product.price }} {{ product.currency }}</p>
+            <p class="info__description">
+              <span class="title">Описание:</span>
+              <span v-for="description of descriptions" :key="description">{{ description }}<br></span>
+            </p>
             <p class="info__code">{{ product.code }}</p>
           </div>
         </div>
 
         <div class="footer">
           <div class="wrap-date">
-            <p class="title">Дата создания</p>
-            <span>{{ date.date }}.{{ date.month }}.{{ date.year }}</span>
-            <span>{{ date.hour }}:{{ date.minute }}:{{ date.second }}</span>
+            <MyDate :date="product.timeOfCreation" title="Дата создания"/>
+            <MyDate v-if="product.timeLastModified" :date="product.timeLastModified" title="Дата последнего изменения"/>
           </div>
 
           <div v-if="showControls" class="controls">
@@ -177,7 +175,8 @@ img {
 
 .wrap-date {
   display: flex;
-  flex-direction: column;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .controls {
